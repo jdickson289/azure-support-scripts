@@ -123,3 +123,27 @@ Write-Host " - ~30 mins for ~600 ghosted NICs" -ForegroundColor Yellow
 Write-Host " - ~60+ mins for >1000 ghosted NICs`r`n" -ForegroundColor Yellow
 
 Write-Host "Script completed successfully." -ForegroundColor Cyan
+
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Ghosted NIC Cleanup Info"
+$form.Size = New-Object System.Drawing.Size(500,150)
+$form.StartPosition = "CenterScreen"
+
+$linkLabel = New-Object System.Windows.Forms.LinkLabel
+$linkLabel.Text = "Ghosted NIC Removal Script on GitHub"
+$linkLabel.Location = New-Object System.Drawing.Point(50,50)
+$linkLabel.Size = New-Object System.Drawing.Size(400,30)
+$linkLabel.LinkBehavior = "AlwaysUnderline"
+$linkLabel.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Regular)
+$linkLabel.LinkColor = [System.Drawing.Color]::Blue
+
+$linkLabel.add_Click({
+    Start-Process "https://github.com/Azure/azure-support-scripts/tree/master/Windows_scripts/Windows_GhostedNIC_Removal_time"
+})
+
+$form.Controls.Add($linkLabel)
+$form.Topmost = $true
+$form.ShowDialog()
