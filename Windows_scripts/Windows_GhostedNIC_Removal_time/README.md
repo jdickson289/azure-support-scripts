@@ -15,6 +15,7 @@ This PowerShell script is used to detect if there are 'ghosted nic' inside of th
 - PowerShell 5.1 or later (earlier versions may not support `-NoProxy`).
 
 ## Usage
+**Always back up your VM before running the Ghost NIC fix script** to prevent data loss or configuration issues in case of unexpected errors or rollback needs.
 
 Run the script in PowerShell **within an Azure VM**:
 
