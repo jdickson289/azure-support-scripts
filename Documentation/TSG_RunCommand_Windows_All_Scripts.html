@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSG – Azure VM Run Command: All Windows Scripts</title>
+<style>
+  :root {
+    --bg:          #0d1117;
+    --surface:     #161b22;
+    --surface2:    #21262d;
+    --border:      #30363d;
+    --text:        #c9d1d9;
+    --muted:       #8b949e;
+    --accent:      #58a6ff;
+    --accent2:     #1f6feb;
+    --green:       #3fb950;
+    --yellow:      #d29922;
+    --red:         #f85149;
+    --orange:      #e3b341;
+    --purple:      #bc8cff;
+    --cyan:        #39c5cf;
+    --tag-bg:      #1c2433;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  /* ---- layout ---- */
+  .page-wrap { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+  /* ---- top header ---- */
+  .top-header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a2035 60%, #0d1117 100%);
+    border-bottom: 2px solid var(--accent2);
+    padding: 28px 32px 20px;
+    margin-bottom: 32px;
+  }
+  .top-header h1 { font-size: 24px; color: #fff; letter-spacing: .4px; }
+  .top-header .subtitle { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .top-header .meta { margin-top: 12px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .top-header .meta span { font-size: 12px; color: var(--muted); }
+  .top-header .meta a { color: var(--accent); text-decoration: none; }
+  .top-header .meta a:hover { text-decoration: underline; }
+  /* ---- nav pills ---- */
+  .nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .nav a {
+    padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: var(--surface2); color: var(--text); text-decoration: none;
+    border: 1px solid var(--border); transition: background .15s;
+  }
+  .nav a:hover { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+  /* ---- sections ---- */
+  section { margin-bottom: 48px; }
+  h2 {
+    font-size: 18px; color: #fff; border-bottom: 1px solid var(--border);
+    padding-bottom: 10px; margin-bottom: 20px;
+  }
+  h2 .section-icon { margin-right: 8px; }
+  h3 { font-size: 15px; color: var(--accent); margin: 20px 0 10px; }
+  p { margin-bottom: 10px; color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  /* ---- info box ---- */
+  .infobox {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+  .infobox.warn { border-color: var(--yellow); }
+  .infobox.danger { border-color: var(--red); }
+  .infobox.tip { border-color: var(--green); }
+  .infobox strong { color: #fff; }
+  /* ---- restriction list ---- */
+  .restrictions {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px; margin-bottom: 18px;
+  }
+  .restriction-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--muted);
+  }
+  .restriction-item strong { color: var(--orange); display: block; margin-bottom: 2px; }
+  /* ---- script cards grid ---- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position: relative;
+    transition: border-color .15s;
+  }
+  .card:hover { border-color: var(--accent2); }
+  .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .card-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .card-title { flex: 1; }
+  .card-title h4 { font-size: 15px; color: #fff; font-family: 'Segoe UI Mono', 'Consolas', monospace; }
+  .card-title .cmd-id {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    background: rgba(88,166,255,.1); padding: 2px 8px; border-radius: 4px;
+    margin-right: 6px; font-family: monospace;
+  }
+  .card-title .badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; margin-right: 4px;
+  }
+  .badge-official { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.3); }
+  .badge-github  { background: rgba(88,166,255,.1);  color: var(--accent);  border: 1px solid rgba(88,166,255,.3); }
+  .badge-beta    { background: rgba(227,179,65,.15);  color: var(--orange);  border: 1px solid rgba(227,179,65,.3); }
+  .badge-deprecated { background: rgba(248,81,73,.1); color: var(--red); border: 1px solid rgba(248,81,73,.3); }
+  .card-body { font-size: 13px; color: var(--text); margin-bottom: 12px; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .tag {
+    font-size: 11px; background: var(--tag-bg); color: var(--muted);
+    padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border);
+  }
+  .card-links { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+  .card-links a {
+    color: var(--accent); display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border: 1px solid var(--border); border-radius: 4px;
+    background: var(--surface2); transition: border-color .15s;
+  }
+  .card-links a:hover { border-color: var(--accent); text-decoration: none; }
+  .card-details {
+    font-size: 12px; color: var(--muted); margin-top: 8px;
+    background: var(--surface2); border-radius: 4px; padding: 8px 12px;
+    border-left: 2px solid var(--border);
+  }
+  .card-details strong { color: var(--text); }
+  /* ---- comparison table ---- */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare-table th {
+    background: var(--surface2); color: var(--accent); font-weight: 600;
+    padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border);
+  }
+  .compare-table td {
+    padding: 9px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top; color: var(--text);
+  }
+  .compare-table tr:hover td { background: rgba(255,255,255,.03); }
+  .yes { color: var(--green); font-weight: 700; }
+  .no  { color: var(--red); font-weight: 700; }
+  .beta-tag { color: var(--orange); font-weight: 700; }
+  .deprecated-tag { color: var(--red); font-style: italic; }
+  /* ---- code block ---- */
+  .code-block {
+    background: #010409; border: 1px solid var(--border); border-radius: 6px;
+    padding: 14px 18px; font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px; color: #e6edf3; overflow-x: auto; margin: 12px 0;
+    line-height: 1.7;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cmt { color: #8b949e; }
+  .code-block .param { color: #ffa657; }
+  /* ---- step list ---- */
+  .steps { list-style: none; counter-reset: steps; }
+  .steps li {
+    counter-increment: steps; padding: 8px 0 8px 40px; position: relative;
+    border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    content: counter(steps);
+    position: absolute; left: 0; top: 8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent2); color: #fff; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* ---- supported OS grid ---- */
+  .os-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .os-pill {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 14px; font-size: 12px; color: var(--muted);
+  }
+  .os-pill strong { color: var(--green); display: block; font-size: 11px; }
+  /* ---- footer ---- */
+  footer {
+    border-top: 1px solid var(--border); margin-top: 40px;
+    padding-top: 20px; font-size: 12px; color: var(--muted);
+  }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--accent); }
+  /* ---- section divider ---- */
+  .section-divider {
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), transparent);
+    margin: 40px 0;
+    border-radius: 1px;
+  }
+  /* ---- summary banner ---- */
+  .summary-banner {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; margin-bottom: 28px;
+  }
+  .summary-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; text-align: center;
+  }
+  .summary-stat .number { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .summary-stat .label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <h1>🪟 Azure Windows VM — Run Command Scripts: Complete TSG</h1>
+  <div class="subtitle">Comprehensive reference covering all official, GitHub-only, and Beta Run Command scripts for Windows Azure VMs</div>
+  <div class="meta">
+    <span>📅 Generated: <strong>April 17, 2026</strong></span>
+    <span>👤 Author: <strong>jdickson</strong></span>
+    <span>📖 Official Docs: <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">Run scripts in a Windows VM — Microsoft Learn ↗</a></span>
+    <span>🔗 GitHub Source: <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows" target="_blank">azure-support-scripts/RunCommand/Windows ↗</a></span>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- NAV -->
+  <div class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#restrictions">Restrictions</a>
+    <a href="#official-scripts">Official CommandIDs</a>
+    <a href="#github-scripts">GitHub-Only Scripts</a>
+    <a href="#beta-scripts">Beta Scripts</a>
+    <a href="#comparison">Learn vs GitHub</a>
+    <a href="#troubleshooting">Troubleshooting Run Command</a>
+    <a href="#references">References</a>
+  </div>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section id="overview">
+    <h2><span class="section-icon">📋</span>Overview</h2>
+
+    <div class="summary-banner">
+      <div class="summary-stat"><div class="number">15</div><div class="label">Official CommandIDs (Microsoft Learn)</div></div>
+      <div class="summary-stat"><div class="number">12</div><div class="label">GitHub-Only Scripts (RunPowerShellScript)</div></div>
+      <div class="summary-stat"><div class="number">1</div><div class="label">Beta Scripts</div></div>
+      <div class="summary-stat"><div class="number">28</div><div class="label">Total Scripts Covered</div></div>
+    </div>
+
+    <p>
+      The <strong>Run Command</strong> feature uses the Azure VM Guest Agent to execute PowerShell scripts remotely within a Windows VM.
+      Scripts run as <strong>NT AUTHORITY\SYSTEM</strong> — no RDP or open inbound ports required. This makes it the primary
+      tool for diagnosing and remediating VMs that are inaccessible via RDP.
+    </p>
+    <p>
+      Scripts fall into two categories:
+    </p>
+    <div class="restrictions" style="grid-template-columns:1fr 1fr;">
+      <div class="restriction-item">
+        <strong>📌 Official Action Run Commands</strong>
+        Published on Microsoft Learn with a named <code>CommandId</code>. Invocable directly via Portal, PowerShell
+        <code>Invoke-AzVMRunCommand</code>, or CLI <code>az vm run-command invoke</code>. Source lives in the
+        <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows" target="_blank">azure-support-scripts</a> repo.
+      </div>
+      <div class="restriction-item">
+        <strong>📦 GitHub-Only / Custom Scripts</strong>
+        Diagnostic scripts hosted in the same GitHub repo but NOT registered as named CommandIds on the platform.
+        Must be run by pasting contents into <strong>RunPowerShellScript</strong> (custom script slot) via Portal or
+        by providing the <code>-ScriptPath</code> parameter.
+      </div>
+    </div>
+
+    <div class="infobox">
+      <strong>💡 Tip for Support Cases:</strong> Always start with the appropriate named CommandId (e.g., <code>RDPSettings</code>,
+      <code>IMDSCertCheck</code>) before escalating. For issues not covered by a named command, use
+      <code>RunPowerShellScript</code> with the relevant GitHub script content.
+    </div>
+  </section>
+
+  <!-- ===================== HOW IT WORKS ===================== -->
+  <section id="how-it-works">
+    <h2><span class="section-icon">⚙️</span>How It Works</h2>
+
+    <h3>Execution Flow</h3>
+    <ol class="steps">
+      <li>Portal/API call sends the command to Azure Fabric via ARM.</li>
+      <li>The Azure Guest Agent on the VM receives the script payload.</li>
+      <li>The <strong>RunCommandWindows</strong> extension is instantiated (auto-installed if missing).</li>
+      <li>Script is executed as <code>NT AUTHORITY\SYSTEM</code> in a 64-bit PowerShell process.</li>
+      <li>Output is returned to the portal/caller (last 4,096 bytes; requires outbound 443 connectivity).</li>
+    </ol>
+
+    <h3>Invocation Methods</h3>
+    <div class="code-block">
+<span class="cmt"># PowerShell — named built-in command</span>
+<span class="kw">Invoke-AzVMRunCommand</span> -ResourceGroupName <span class="str">'myRG'</span> -VMName <span class="str">'myVM'</span> `
+    -CommandId <span class="str">'RDPSettings'</span>
+
+<span class="cmt"># PowerShell — custom script file</span>
+<span class="kw">Invoke-AzVMRunCommand</span> -ResourceGroupName <span class="str">'myRG'</span> -VMName <span class="str">'myVM'</span> `
+    -CommandId <span class="str">'RunPowerShellScript'</span> -ScriptPath <span class="str">'C:\scripts\Windows_Firewall_Rules_Validation.ps1'</span>
+
+<span class="cmt"># Azure CLI — named built-in command</span>
+az vm run-command invoke --resource-group myRG --name myVM \
+    --command-id RDPSettings
+
+<span class="cmt"># Azure CLI — custom script content</span>
+az vm run-command invoke --resource-group myRG --name myVM \
+    --command-id RunPowerShellScript \
+    --scripts @Windows_Firewall_Rules_Validation.ps1
+
+<span class="cmt"># Portal: VM → Operations → Run Command → select CommandId or RunPowerShellScript</span>
+    </div>
+
+    <h3>Extension Log Location</h3>
+    <div class="code-block">C:\WindowsAzure\Logs\Plugins\Microsoft.CPlat.Core.RunCommandWindows\&lt;version&gt;\RunCommandExtension.log</div>
+
+    <h3>Supported OS</h3>
+    <div class="os-grid">
+      <div class="os-pill"><strong>x64 + ARM64</strong>Windows 10</div>
+      <div class="os-pill"><strong>x64 + ARM64</strong>Windows 11</div>
+      <div class="os-pill"><strong>x64 + ARM64</strong>Server 2016 / Core</div>
+      <div class="os-pill"><strong>x64 + ARM64</strong>Server 2019 / Core</div>
+      <div class="os-pill"><strong>x64 + ARM64</strong>Server 2022 / Core / Azure Ed.</div>
+      <div class="os-pill"><strong>x64 + ARM64</strong>Server 2025 / Core / Azure Ed.</div>
+    </div>
+  </section>
+
+  <!-- ===================== RESTRICTIONS ===================== -->
+  <section id="restrictions">
+    <h2><span class="section-icon">⛔</span>Restrictions &amp; Known Caveats</h2>
+    <div class="restrictions">
+      <div class="restriction-item"><strong>Output limit</strong>Last 4,096 bytes returned to caller</div>
+      <div class="restriction-item"><strong>Timeout</strong>90-minute max runtime; min ~20 seconds</div>
+      <div class="restriction-item"><strong>Concurrency</strong>One script at a time per VM</div>
+      <div class="restriction-item"><strong>Execution context</strong>Runs as SYSTEM — no interactive/GUI</div>
+      <div class="restriction-item"><strong>No cancel</strong>Cannot cancel a running script mid-execution</div>
+      <div class="restriction-item"><strong>No stdin</strong>Interactive prompts not supported</div>
+      <div class="restriction-item"><strong>Outbound 443</strong>VM must reach Azure public IPs (AzureCloud tag) to return output</div>
+      <div class="restriction-item"><strong>Guest Agent</strong>Agent status must be <em>Ready</em>; validate in VM Properties pane</div>
+      <div class="restriction-item"><strong>&amp; character</strong>Escape with <code>^&amp;</code> in parameter values</div>
+      <div class="restriction-item"><strong>\n in paths</strong>Treat as newline; replace <code>\n</code> with <code>\N</code></div>
+      <div class="restriction-item"><strong>AutoRun reg key</strong>HKLM\…\Command Processor\AutoRun can interfere with extension install</div>
+      <div class="restriction-item"><strong>VM Agent updates</strong>Avoid scripts that stop/update the VM Agent (causes Transitioning state)</div>
+    </div>
+
+    <div class="infobox warn">
+      <strong>⚠️ Extension Removal:</strong> If the extension is stuck, remove it then re-run (it auto-reinstalls):<br>
+      <code>Invoke-AzVMRunCommand -ResourceGroupName 'rg' -VMName 'vm' -CommandId 'RemoveRunCommandWindowsExtension'</code>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===================== OFFICIAL SCRIPTS ===================== -->
+  <section id="official-scripts">
+    <h2><span class="section-icon">✅</span>Official Action Run Command Scripts (Named CommandIDs)</h2>
+    <p>
+      These scripts are registered as platform <strong>CommandIds</strong> and appear in the Azure Portal Run Command list.
+      They can be invoked by CommandId directly — no script content needed.
+    </p>
+
+    <div class="cards">
+
+      <!-- RunPowerShellScript -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🖥️</div>
+          <div class="card-title">
+            <h4>RunPowerShellScript</h4>
+            <span class="cmd-id">RunPowerShellScript</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          The generic custom-script slot. Allows running <em>any</em> PowerShell script inline or from a file.
+          All GitHub-only scripts are run via this CommandId by pasting their content. Supports optional named
+          parameters passed as key/value pairs.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Custom</span><span class="tag">Portal</span><span class="tag">PowerShell</span><span class="tag">CLI</span>
+        </div>
+        <div class="card-links">
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command-managed" target="_blank">📖 Managed RC Docs</a>
+        </div>
+      </div>
+
+      <!-- DisableNLA -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔓</div>
+          <div class="card-title">
+            <h4>DisableNLA</h4>
+            <span class="cmd-id">DisableNLA</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Disables Network Level Authentication (NLA) for Remote Desktop. Useful when a user cannot connect
+          because NLA is enforced but credentials/tokens are invalid.
+          <strong>⚠️ VM restart required after running</strong> — the script itself does NOT restart.
+        </div>
+        <div class="card-tags">
+          <span class="tag">RDP</span><span class="tag">Authentication</span><span class="tag">Registry</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/DisableNLA" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>Use when:</strong> RDP fails with "An authentication error has occurred" / NLA-related error. Disable NLA, restart VM, reconnect, then re-enable security as needed.
+        </div>
+      </div>
+
+      <!-- DisableWindowsUpdate -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🚫</div>
+          <div class="card-title">
+            <h4>DisableWindowsUpdate</h4>
+            <span class="cmd-id">DisableWindowsUpdate</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Disables Automatic Updates through Windows Update by modifying Group Policy/registry settings.
+          Used to prevent unwanted reboots or update interference during troubleshooting.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Windows Update</span><span class="tag">Policy</span><span class="tag">Registry</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/DisableWindowsUpdate" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- EnableAdminAccount -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">👤</div>
+          <div class="card-title">
+            <h4>EnableAdminAccount</h4>
+            <span class="cmd-id">EnableAdminAccount</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Checks if the local built-in Administrator account is disabled; enables it if so.
+          Useful for recovering VM access when all user accounts are locked out or user credentials are unknown.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Access Recovery</span><span class="tag">Local Admin</span><span class="tag">Account</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/EnableAdminAccount" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- EnableEMS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔧</div>
+          <div class="card-title">
+            <h4>EnableEMS</h4>
+            <span class="cmd-id">EnableEMS</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Enables Emergency Management Services (EMS) / Special Administration Console (SAC) to allow
+          serial console connections. Critical for troubleshooting VMs that are completely unreachable via RDP.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Serial Console</span><span class="tag">EMS</span><span class="tag">SAC</span><span class="tag">Emergency Access</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/EnableEMS" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+          <a href="https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/serial-console-windows" target="_blank">📖 Serial Console Guide</a>
+        </div>
+        <div class="card-details">
+          <strong>After running:</strong> Restart VM, then connect via Azure Serial Console. EMS must be enabled before the VM becomes unresponsive.
+        </div>
+      </div>
+
+      <!-- EnableRemotePS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">💻</div>
+          <div class="card-title">
+            <h4>EnableRemotePS</h4>
+            <span class="cmd-id">EnableRemotePS</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Enables PowerShell Remoting (WinRM) on the VM. Allows <code>Enter-PSSession</code> or
+          <code>Invoke-Command</code> from a remote host once network connectivity is restored.
+        </div>
+        <div class="card-tags">
+          <span class="tag">WinRM</span><span class="tag">PowerShell Remoting</span><span class="tag">Remote Management</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/EnableRemotePS" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- EnableWindowsUpdate -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">✅</div>
+          <div class="card-title">
+            <h4>EnableWindowsUpdate</h4>
+            <span class="cmd-id">EnableWindowsUpdate</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Re-enables Automatic Updates through Windows Update after it has been disabled.
+          Pair with <code>DisableWindowsUpdate</code> when you need to control update timing.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Windows Update</span><span class="tag">Policy</span><span class="tag">Registry</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/EnableWindowsUpdate" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- IMDSCertCheck -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔐</div>
+          <div class="card-title">
+            <h4>IMDSCertCheck</h4>
+            <span class="cmd-id">IMDSCertCheck</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Checks IMDS (Instance Metadata Service) health, then analyzes currently installed certificates that IMDS
+          depends on. If certificates are missing, outputs details and mitigation steps including download links for
+          missing root/intermediate CAs from Microsoft's CA details page.
+        </div>
+        <div class="card-tags">
+          <span class="tag">IMDS</span><span class="tag">Certificates</span><span class="tag">Trust Chain</span><span class="tag">Identity</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/IMDSCertCheck" target="_blank">📁 GitHub README</a>
+          <a href="https://aka.ms/AzVmIMDSValidation" target="_blank">🔗 aka.ms/AzVmIMDSValidation</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service" target="_blank">📖 IMDS Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>Note:</strong> This CommandId wraps the same validation logic as <code>Windows_IMDSValidation</code> (attested metadata + cert chain check).
+        </div>
+      </div>
+
+      <!-- IPConfig -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">
+            <h4>IPConfig</h4>
+            <span class="cmd-id">IPConfig</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Displays detailed IP address, subnet mask, and default gateway information for each TCP/IP-bound adapter.
+          Equivalent to running <code>ipconfig /all</code> inside the VM without requiring RDP.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Network</span><span class="tag">IP Address</span><span class="tag">Diagnostics</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/IPConfig" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- RDPSettings -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🖥️</div>
+          <div class="card-title">
+            <h4>RDPSettings</h4>
+            <span class="cmd-id">RDPSettings</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Checks RDP-related registry settings and domain policy settings. If the VM is domain-joined,
+          suggests policy actions. Otherwise, modifies RDP registry values to restore defaults.
+          One of the most commonly used scripts in RDP break/fix cases.
+        </div>
+        <div class="card-tags">
+          <span class="tag">RDP</span><span class="tag">Registry</span><span class="tag">Domain Policy</span><span class="tag">Break-Fix</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/RDPSettings" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>Run this first</strong> in most RDP connectivity cases before escalating. Output is shown in portal output window directly.
+        </div>
+      </div>
+
+      <!-- ResetRDPCert -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">📜</div>
+          <div class="card-title">
+            <h4>ResetRDPCert</h4>
+            <span class="cmd-id">ResetRDPCert</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Removes the SSL certificate bound to the RDP listener and restores RDP listener security to default.
+          Use when RDP fails due to certificate issues — expired cert, self-signed cert mismatch, or corrupted binding.
+        </div>
+        <div class="card-tags">
+          <span class="tag">RDP</span><span class="tag">SSL Certificate</span><span class="tag">Listener</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/ResetRDPCert" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+      </div>
+
+      <!-- SetRDPPort -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔌</div>
+          <div class="card-title">
+            <h4>SetRDPPort</h4>
+            <span class="cmd-id">SetRDPPort</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Sets the RDP listening port to the default (3389) or a user-specified port number.
+          Also enables the inbound Windows Firewall rule for the specified port.
+          Useful when a custom port was set and is now causing connectivity issues.
+        </div>
+        <div class="card-tags">
+          <span class="tag">RDP</span><span class="tag">Port</span><span class="tag">Firewall</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/blob/master/RunCommand/Windows/SetRDPPort" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">📖 Learn Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>Parameters:</strong> Accepts optional <code>portNumber</code> parameter. Defaults to 3389 if not provided.
+          Remember to also update the NSG inbound rule to match.
+        </div>
+      </div>
+
+      <!-- WindowsActivationValidation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔑</div>
+          <div class="card-title">
+            <h4>WindowsActivationValidation</h4>
+            <span class="cmd-id">WindowsActivationValidation</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Comprehensive Windows activation diagnostic. Checks WinRM service state, detects Azure Edition OS,
+          validates KMS endpoint connectivity (port 1688), checks certificate chain for attestation, and
+          attempts activation via <code>slmgr.vbs</code> if needed. Error codes include MS doc links.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Activation</span><span class="tag">KMS</span><span class="tag">Licensing</span><span class="tag">IMDS</span><span class="tag">Certificates</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Activation_Validation" target="_blank">📁 GitHub (Windows_Activation_Validation)</a>
+          <a href="https://aka.ms/AzVmWinActivationValidationTool" target="_blank">🔗 aka.ms/AzVmWinActivationValidationTool</a>
+        </div>
+        <div class="card-details">
+          <strong>Output key:</strong> ✅ Green = pass, ⚠️ Yellow = warning, ❌ Red = failure. Check KMS endpoint <code>azkms.core.windows.net:1688</code> connectivity first.
+        </div>
+      </div>
+
+      <!-- WindowsGhostedNicValidationScript -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">
+            <h4>WindowsGhostedNicValidationScript</h4>
+            <span class="cmd-id">WindowsGhostedNicValidationScript</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Scans the Windows registry for network adapters on PCI and VMBUS buses, compares them with currently
+          active adapters, and identifies ghosted NICs (disconnected/stale entries). Ghosted NICs can cause
+          RDP failures, network connectivity issues, and Windows Update failures.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Network</span><span class="tag">NIC</span><span class="tag">Ghosted NIC</span><span class="tag">Registry</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_GhostedNIC_Detection" target="_blank">📁 GitHub (Detection)</a>
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_GhostedNIC_Removal" target="_blank">📁 GitHub (Removal)</a>
+          <a href="https://aka.ms/AzVmGhostedNicCleanup" target="_blank">🔗 aka.ms/AzVmGhostedNicCleanup</a>
+        </div>
+        <div class="card-details">
+          <strong>⚠️ Note:</strong> This CommandId is the detection version. For removal, use the GitHub
+          <code>Windows_GhostedNIC_Removal</code> script via <code>RunPowerShellScript</code>.
+          Cleanup can take 30–60+ min if &gt;600 ghosted NICs are present. Take a VM snapshot first.
+        </div>
+      </div>
+
+      <!-- WindowsUpgradeAssessmentValidation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">⬆️</div>
+          <div class="card-title">
+            <h4>WindowsUpgradeAssessmentValidation</h4>
+            <span class="cmd-id">WindowsUpgradeAssessmentValidation</span>
+            <span class="badge badge-official">Official</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Assesses Windows VM readiness for in-place OS upgrade. Evaluates: current OS version, supported upgrade
+          paths, system disk space (≥64 GB), physical memory (≥4 GB), VM generation (Gen1/Gen2), Trusted Launch,
+          Secure Boot, vTPM, and Azure Virtual Desktop (AVD) pooled host pool status.
+        </div>
+        <div class="card-tags">
+          <span class="tag">OS Upgrade</span><span class="tag">IPU</span><span class="tag">Trusted Launch</span><span class="tag">AVD</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_OSUpgrade_Assessment_Validation" target="_blank">📁 GitHub README</a>
+          <a href="https://aka.ms/AzVmOSUpgradeAssessment" target="_blank">🔗 aka.ms/AzVmOSUpgradeAssessment</a>
+          <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows-in-place-upgrade" target="_blank">📖 In-Place Upgrade Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>Upgrade Matrix Highlights:</strong> WS2022→WS2025 ✅ | WS2025→WS2025 AzEd ❌ (redeploy) | Win10 Gen1→Win11 ❌ | Win10 Gen2+TL→Win11 ✅
+        </div>
+      </div>
+
+    </div><!-- /cards -->
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===================== GITHUB-ONLY SCRIPTS ===================== -->
+  <section id="github-scripts">
+    <h2><span class="section-icon">📦</span>GitHub-Only Scripts (Run via RunPowerShellScript)</h2>
+    <p>
+      These scripts are maintained in the <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows" target="_blank">azure-support-scripts</a>
+      repo but are <strong>not registered as named CommandIds</strong> on the Azure platform.
+      Run them by pasting script content into <code>RunPowerShellScript</code> in the portal, or using
+      <code>-ScriptPath</code> with <code>Invoke-AzVMRunCommand</code>.
+    </p>
+
+    <div class="cards">
+
+      <!-- SecureBootCertCheck -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔒</div>
+          <div class="card-title">
+            <h4>SecureBootCertCheck</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Read-only audit of Secure Boot certificate update status on Windows devices. Reads registry values,
+          event log entries, and scheduled task state to produce a color-coded report with prioritized next steps.
+          Covers: <code>AvailableUpdates</code> bitmask, <code>UEFICA2023Status</code>, firmware event IDs 1795–1808,
+          Secure-Boot-Update scheduled task, and WinCS key status.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Secure Boot</span><span class="tag">UEFI</span><span class="tag">Certificates</span><span class="tag">Gen2</span><span class="tag">Trusted Launch</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/SecureBootCertCheck" target="_blank">📁 GitHub README</a>
+          <a href="https://aka.ms/securebootplaybook" target="_blank">🔗 Secure Boot Playbook</a>
+        </div>
+        <div class="card-details">
+          <strong>Key event IDs:</strong> 1808 = updated ✅ | 1801 = reboot needed | 1795 = firmware error (host-side, file support ticket) | 1802 = known FW issue (<code>KI_&lt;n&gt;</code>).<br>
+          <strong>Script is read-only</strong> — no changes made.
+        </div>
+      </div>
+
+      <!-- Windows_DuplicateSID_Validation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🆔</div>
+          <div class="card-title">
+            <h4>Windows_DuplicateSID_Validation</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Scans <code>netsetup.log</code> to detect indicators of duplicate Security Identifier (SID) or machine account
+          conflicts. Common with domain join failures — looks for "Account already exists" and
+          <code>NetUserAdd failed: 0x8b0</code> error patterns. Provides MS doc links for remediation.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Domain Join</span><span class="tag">SID</span><span class="tag">Active Directory</span><span class="tag">Machine Account</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_DuplicateSID_Validation" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/troubleshoot/windows-server/identity/machine-account-duplicate-sid" target="_blank">📖 Duplicate SID Docs</a>
+        </div>
+      </div>
+
+      <!-- Windows_Firewall_Rules_Validation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🛡️</div>
+          <div class="card-title">
+            <h4>Windows_Firewall_Rules_Validation</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Comprehensive firewall and endpoint connectivity check. Validates: MpsSvc service, all 3 firewall profiles,
+          port rules (RDP/3389, WinRM/5985/5986, SMB/445, HTTP/80, HTTPS/443), 41 Azure service endpoints
+          (IMDS, WireServer, KMS, AAD, ARM, Blob, Monitor, Backup, KeyVault, Defender, WU, etc.), PerfInsights,
+          WSUS, Azure IP block rules, WinRM/RDP allow rules, and routing (default GW, forced tunneling).
+        </div>
+        <div class="card-tags">
+          <span class="tag">Firewall</span><span class="tag">Network</span><span class="tag">Endpoints</span><span class="tag">Connectivity</span><span class="tag">WSUS</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Firewall_Rules_Validation" target="_blank">📁 GitHub README</a>
+          <a href="https://aka.ms/AzVmFirewallValidation" target="_blank">🔗 aka.ms/AzVmFirewallValidation</a>
+        </div>
+        <div class="card-details">
+          <strong>Output:</strong> OK/FAIL/WARN per check. 41 endpoints tested. Output optimized for 4 KB Run Command limit.<br>
+          <strong>Supports mock mode</strong> for local testing without Azure VM.
+        </div>
+      </div>
+
+      <!-- Windows_GhostedNIC_Detection -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">👻</div>
+          <div class="card-title">
+            <h4>Windows_GhostedNIC_Detection</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Detects ghosted (disconnected/stale) network interface cards in the Windows registry.
+          A VM with ghosted NICs can experience RDP connectivity failures and Windows Update failures.
+          Detection only — no changes are made to the system.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Network</span><span class="tag">NIC</span><span class="tag">Registry</span><span class="tag">Detection Only</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_GhostedNIC_Detection" target="_blank">📁 GitHub README</a>
+        </div>
+        <div class="card-details">
+          <strong>Next step after detection:</strong> If ghosted NICs found, run <code>Windows_GhostedNIC_Removal</code> (snapshot VM first).
+          600+ NICs → ~30 min cleanup; 1000+ NICs → 60+ min.
+        </div>
+      </div>
+
+      <!-- Windows_GhostedNIC_Removal -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🗑️</div>
+          <div class="card-title">
+            <h4>Windows_GhostedNIC_Removal</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Detects and <strong>removes</strong> ghosted NIC registry entries. Modifies registry entries and device
+          configurations — take a VM snapshot or backup before running.
+          Resolves network connectivity issues and Windows Update failures caused by stale NIC entries.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Network</span><span class="tag">NIC</span><span class="tag">Registry</span><span class="tag">Remediation</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_GhostedNIC_Removal" target="_blank">📁 GitHub README</a>
+        </div>
+        <div class="card-details">
+          <strong>⚠️ Backup required before running.</strong> This script makes registry changes.
+        </div>
+      </div>
+
+      <!-- Windows_IMDSValidation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">☁️</div>
+          <div class="card-title">
+            <h4>Windows_IMDSValidation</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Verifies the attestation signature from the Azure Instance Metadata Service (IMDS).
+          Fetches attested metadata, extracts and decodes the signature, and attempts to build a certificate chain.
+          Warns if certificates are missing and links to the Azure CA Details documentation for download.
+        </div>
+        <div class="card-tags">
+          <span class="tag">IMDS</span><span class="tag">Attestation</span><span class="tag">Certificates</span><span class="tag">Identity</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_IMDSValidation" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/azure/virtual-machines/windows/instance-metadata-service" target="_blank">📖 IMDS Docs</a>
+          <a href="https://learn.microsoft.com/azure/security/fundamentals/azure-ca-details" target="_blank">📖 Azure CA Details</a>
+        </div>
+      </div>
+
+      <!-- Windows_Mellanox_Driver_Validation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔌</div>
+          <div class="card-title">
+            <h4>Windows_Mellanox_Driver_Validation</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Validates the Mellanox mlx5 network adapter driver version and checks for
+          <code>DRIVER_IRQL_NOT_LESS_OR_EQUAL</code> bugcheck events (0x000000D1) in the last 30 days.
+          Flags adapters with drivers older than 1 year (warning) or 2 years (high severity).
+          Detection only — no changes made. Use as first stop for Mellanox crash cases before escalation.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Mellanox</span><span class="tag">mlx5</span><span class="tag">Driver</span><span class="tag">Bugcheck</span><span class="tag">0xD1</span><span class="tag">NVIDIA</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Mellanox_Driver_Validation" target="_blank">📁 GitHub README</a>
+          <a href="https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/windows-virtual-machine-mellanox-network-driver-crash-troubleshooting" target="_blank">📖 Mellanox Crash TSG</a>
+          <a href="https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/windows-virtual-machine-mellanox-network-driver-validation-tool" target="_blank">📖 Validation Tool Docs</a>
+        </div>
+        <div class="card-details">
+          <strong>⚠️ Not in local clone</strong> — script only available on GitHub. ADO TSG:
+          <a href="https://dev.azure.com/Supportability/AzureIaaSVM/_wiki/wikis/AzureIaaSVM/2539440/" target="_blank">Mellanox mlx5 Driver Crash</a>.
+        </div>
+      </div>
+
+      <!-- Windows_Service_Dependency_Analyzer -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔗</div>
+          <div class="card-title">
+            <h4>Windows_Service_Dependency_Analyzer</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Analyzes Windows service dependency chains, startup type mismatches, and volatile temp-drive path references.
+          Detects: circular dependencies (Failover Cluster issues), Disabled services with Automatic dependents,
+          Automatic services stopped with non-zero exit codes, and services installed on the Azure temp drive
+          (D:\) that will be lost on VM resize/redeployment.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Services</span><span class="tag">Dependencies</span><span class="tag">Startup</span><span class="tag">Temp Drive</span><span class="tag">Failover Cluster</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Service_Dependency_Analyzer" target="_blank">📁 GitHub README</a>
+        </div>
+        <div class="card-details">
+          <strong>Parameters:</strong> <code>-TempDriveLetter</code> (default: D), <code>-MaxDepth</code> (default: 4), <code>-IncludeHealthy</code> switch.<br>
+          <strong>Supports mock mode</strong> for local testing without Azure VM or admin rights.
+        </div>
+      </div>
+
+      <!-- Windows_Update_Common_Error_Detection -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔍</div>
+          <div class="card-title">
+            <h4>Windows_Update_Common_Error_Detection</h4>
+            <span class="badge badge-github">GitHub Only</span>
+            <span class="badge badge-beta">Beta PS1</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Scans CBS logs for known Windows Update error codes, counts occurrences, and provides a summary.
+          When a known error is found and a remediation exists, outputs a link to Microsoft documentation.
+          Accepts a configurable lookback window (default: 7 days).
+        </div>
+        <div class="card-tags">
+          <span class="tag">Windows Update</span><span class="tag">CBS Logs</span><span class="tag">Error Codes</span><span class="tag">Diagnostics</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Update_Common_Error_Detection" target="_blank">📁 GitHub Folder</a>
+        </div>
+        <div class="card-details">
+          <strong>Parameters:</strong> <code>-StartDays</code> (int, default 7) — lookback window in days.<br>
+          <strong>Note:</strong> Script filename is prefixed <code>Beta_</code> — treat as pre-release.
+        </div>
+      </div>
+
+      <!-- Windows_Update_IPU_Validation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">📊</div>
+          <div class="card-title">
+            <h4>Windows_Update_IPU_Validation</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Validates Windows system readiness for an In-Place Upgrade (IPU). Checks Windows Update components
+          and service health, pending updates, servicing stack readiness, disk space, and OS build compatibility.
+          Generates a summary report for troubleshooting update failures that require an IPU to resolve.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Windows Update</span><span class="tag">IPU</span><span class="tag">Servicing Stack</span><span class="tag">Disk Space</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_Update_IPU_Validation" target="_blank">📁 GitHub README</a>
+        </div>
+      </div>
+
+      <!-- Windows_WUA_Update_Reset -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔄</div>
+          <div class="card-title">
+            <h4>Windows_WUA_Update_Reset</h4>
+            <span class="badge badge-github">GitHub Only</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Resets Windows Update components to resolve cases where updates fail or become stuck.
+          Stops WU-related services, clears <code>SoftwareDistribution</code> and <code>Catroot2</code> folders,
+          re-registers critical Windows Update DLLs, then restarts services. Cached update files are removed —
+          WU will take longer on first run after reset while it rebuilds cache.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Windows Update</span><span class="tag">WUA Reset</span><span class="tag">SoftwareDistribution</span><span class="tag">Stuck Updates</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_WUA_Update_Reset" target="_blank">📁 GitHub README</a>
+        </div>
+        <div class="card-details">
+          <strong>⚠️ Warning:</strong> Removes cached update files. Ensure no other update operations are running during execution.
+        </div>
+      </div>
+
+      <!-- Windows_GhostedNIC_Check_Time_warning (Deprecated) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">⚠️</div>
+          <div class="card-title">
+            <h4>Windows_GhostedNIC_Check_Time_warning</h4>
+            <span class="badge badge-deprecated">Deprecated</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <em>This script has been moved to <code>Windows_GhostedNIC_Detection</code>.</em>
+          Do not use this folder — use <code>Windows_GhostedNIC_Detection</code> instead.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Deprecated</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Windows_GhostedNIC_Detection" target="_blank">📁 Use This Instead</a>
+        </div>
+      </div>
+
+    </div><!-- /cards -->
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===================== BETA SCRIPTS ===================== -->
+  <section id="beta-scripts">
+    <h2><span class="section-icon">🧪</span>Beta Scripts</h2>
+    <p>
+      Beta scripts are located in the
+      <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Beta" target="_blank">Beta/</a>
+      subfolder. They are pre-release — functional and useful, but not yet promoted to official CommandIds.
+      Run via <code>RunPowerShellScript</code>.
+    </p>
+
+    <div class="infobox warn">
+      <strong>⚠️ Beta Notice:</strong> Beta scripts may change without notice and have not gone through full release validation.
+      Treat output as informational; validate findings before acting.
+    </div>
+
+    <div class="cards">
+
+      <!-- Windows_TLSSSL_Validation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔐</div>
+          <div class="card-title">
+            <h4>Windows_TLSSSL_Validation</h4>
+            <span class="badge badge-beta">Beta</span>
+          </div>
+        </div>
+        <div class="card-body">
+          Audits TLS/SSL configuration via Schannel registry settings. Reports protocol enable/disable state
+          (SSL 2.0/3.0, TLS 1.0/1.1/1.2/1.3) per role (Client/Server), effective cipher suite order,
+          policy overrides (GPO-set cipher suites), and recent Schannel/TLS errors from the System event log
+          (last 14 days). Flags weak cipher suites for review.
+        </div>
+        <div class="card-tags">
+          <span class="tag">TLS</span><span class="tag">SSL</span><span class="tag">Schannel</span><span class="tag">Cipher Suites</span><span class="tag">Security</span>
+        </div>
+        <div class="card-links">
+          <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Beta/Windows_TLSSSL_Validation" target="_blank">📁 GitHub README</a>
+        </div>
+        <div class="card-details">
+          <strong>Requirements:</strong> PowerShell 5.1+, admin privileges, Azure VM with IMDS access.<br>
+          <strong>Use when:</strong> Application connectivity fails due to TLS version mismatch, cipher negotiation errors, or after security hardening changes.
+        </div>
+      </div>
+
+    </div><!-- /cards -->
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===================== COMPARISON TABLE ===================== -->
+  <section id="comparison">
+    <h2><span class="section-icon">📊</span>Microsoft Learn vs GitHub — Complete Comparison</h2>
+    <p>
+      The table below maps every script to its status on <strong>Microsoft Learn</strong> (named CommandId) vs.
+      presence in the <strong>GitHub repo</strong> and <strong>local clone</strong>.
+    </p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Script / Folder</th>
+          <th>Category</th>
+          <th>Named CommandId on Learn</th>
+          <th>In Local Clone</th>
+          <th>GitHub Folder</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>RunPowerShellScript</strong></td><td>Custom</td><td class="yes">✅ RunPowerShellScript</td><td>N/A</td><td>N/A</td><td>Platform built-in</td></tr>
+        <tr><td><strong>DisableNLA</strong></td><td>RDP</td><td class="yes">✅ DisableNLA</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>DisableWindowsUpdate</strong></td><td>Windows Update</td><td class="yes">✅ DisableWindowsUpdate</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>EnableAdminAccount</strong></td><td>Access Recovery</td><td class="yes">✅ EnableAdminAccount</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>EnableEMS</strong></td><td>Emergency Access</td><td class="yes">✅ EnableEMS</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>EnableRemotePS</strong></td><td>Remote Mgmt</td><td class="yes">✅ EnableRemotePS</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>EnableWindowsUpdate</strong></td><td>Windows Update</td><td class="yes">✅ EnableWindowsUpdate</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>IMDSCertCheck</strong></td><td>IMDS / Certs</td><td class="yes">✅ IMDSCertCheck</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>IPConfig</strong></td><td>Network</td><td class="yes">✅ IPConfig</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>RDPSettings</strong></td><td>RDP</td><td class="yes">✅ RDPSettings</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>ResetRDPCert</strong></td><td>RDP</td><td class="yes">✅ ResetRDPCert</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>SetRDPPort</strong></td><td>RDP</td><td class="yes">✅ SetRDPPort</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>Windows_Activation_Validation</strong></td><td>Activation</td><td class="yes">✅ WindowsActivationValidation</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>Windows_GhostedNIC_Detection + Removal</strong></td><td>Network / NIC</td><td class="yes">✅ WindowsGhostedNicValidationScript</td><td class="yes">✅ (both)</td><td class="yes">✅</td><td class="yes">GA (Detection only as CommandId)</td></tr>
+        <tr><td><strong>Windows_OSUpgrade_Assessment_Validation</strong></td><td>OS Upgrade</td><td class="yes">✅ WindowsUpgradeAssessmentValidation</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">GA</td></tr>
+        <tr><td><strong>SecureBootCertCheck</strong></td><td>Secure Boot</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_DuplicateSID_Validation</strong></td><td>Domain / AD</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_Firewall_Rules_Validation</strong></td><td>Firewall / Network</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_GhostedNIC_Check_Time_warning</strong></td><td>Network / NIC</td><td class="no">❌ No CommandId</td><td class="yes">✅ (deprecated)</td><td class="yes">✅</td><td class="deprecated-tag">Deprecated — use Detection</td></tr>
+        <tr><td><strong>Windows_IMDSValidation</strong></td><td>IMDS</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_Mellanox_Driver_Validation</strong></td><td>Driver / Network</td><td class="no">❌ No CommandId</td><td class="no">❌ Not in local clone</td><td class="yes">✅</td><td>GitHub only (not cloned)</td></tr>
+        <tr><td><strong>Windows_Service_Dependency_Analyzer</strong></td><td>Services</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_Update_Common_Error_Detection</strong></td><td>Windows Update</td><td class="no">❌ No CommandId</td><td class="yes">✅ (Beta PS1)</td><td class="yes">✅</td><td class="beta-tag">Beta PS1</td></tr>
+        <tr><td><strong>Windows_Update_IPU_Validation</strong></td><td>Windows Update</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Windows_WUA_Update_Reset</strong></td><td>Windows Update</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td>GitHub only</td></tr>
+        <tr><td><strong>Beta/Windows_TLSSSL_Validation</strong></td><td>TLS / Security</td><td class="no">❌ No CommandId</td><td class="yes">✅</td><td class="yes">✅</td><td class="beta-tag">Beta</td></tr>
+      </tbody>
+    </table>
+
+    <div class="infobox" style="margin-top:16px;">
+      <strong>📝 Gap Analysis:</strong>
+      <ul style="margin-top:8px; padding-left:20px; font-size:13px; line-height:2;">
+        <li><strong>Windows_Mellanox_Driver_Validation</strong> — present on GitHub but <em>not in the local azure-support-scripts-clone</em>. Pull from GitHub before use.</li>
+        <li>12 scripts have no named CommandId and must be run via <code>RunPowerShellScript</code>.</li>
+        <li><code>Windows_GhostedNIC_Check_Time_warning</code> is deprecated — the README redirects to <code>Windows_GhostedNIC_Detection</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===================== TROUBLESHOOTING RUN COMMAND ===================== -->
+  <section id="troubleshooting">
+    <h2><span class="section-icon">🔧</span>Troubleshooting Run Command Itself</h2>
+
+    <h3>Extension Stuck / Not Responding</h3>
+    <div class="infobox">
+      Check log: <code>C:\WindowsAzure\Logs\Plugins\Microsoft.CPlat.Core.RunCommandWindows\&lt;version&gt;\RunCommandExtension.log</code><br>
+      Remove and auto-reinstall the extension:
+    </div>
+    <div class="code-block">
+<span class="kw">Invoke-AzVMRunCommand</span> -ResourceGroupName <span class="str">'rgname'</span> -VMName <span class="str">'vmname'</span> `
+    -CommandId <span class="str">'RemoveRunCommandWindowsExtension'</span>
+    </div>
+
+    <h3>Common Issues</h3>
+    <div class="restrictions">
+      <div class="restriction-item">
+        <strong>Guest Agent NOT READY</strong>
+        Check VM Properties in portal. Agent must be Ready. If not, check Azure VM Agent health first.
+      </div>
+      <div class="restriction-item">
+        <strong>Output truncated</strong>
+        4,096 byte limit. Scripts should format output concisely; use table format (see Firewall Validation).
+      </div>
+      <div class="restriction-item">
+        <strong>"Entity not found" error</strong>
+        CommandId value is incorrect. Must exactly match a value from the official list.
+      </div>
+      <div class="restriction-item">
+        <strong>Script runs but no output</strong>
+        VM lacks outbound port 443 to Azure public IPs. Add NSG allow rule for AzureCloud service tag.
+      </div>
+      <div class="restriction-item">
+        <strong>&amp; symbol failure</strong>
+        Escape with <code>^&amp;</code> in parameter strings passed to the script.
+      </div>
+      <div class="restriction-item">
+        <strong>\n in file paths</strong>
+        Replace <code>\n</code> with <code>\N</code> (e.g., <code>C:\Windows\notepad.exe</code> → use <code>\N</code>).
+      </div>
+      <div class="restriction-item">
+        <strong>AutoRun registry key</strong>
+        Check <code>HKLM\SOFTWARE\Microsoft\Command Processor\AutoRun</code> — can interfere with extension install.
+      </div>
+      <div class="restriction-item">
+        <strong>Script times out</strong>
+        90-minute max. Break large scripts into smaller phases or use a custom script approach with output checkpoints.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== REFERENCES ===================== -->
+  <section id="references">
+    <h2><span class="section-icon">📚</span>References</h2>
+    <div class="restrictions" style="grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));">
+      <div class="restriction-item">
+        <strong>🌐 Primary Documentation</strong>
+        <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">Run scripts in a Windows VM — Microsoft Learn</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🌐 Managed Run Command</strong>
+        <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command-managed" target="_blank">Managed Run Command (preview) — Microsoft Learn</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📁 GitHub Source</strong>
+        <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows" target="_blank">azure-support-scripts / RunCommand / Windows</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📁 Beta Scripts</strong>
+        <a href="https://github.com/Azure/azure-support-scripts/tree/master/RunCommand/Windows/Beta" target="_blank">azure-support-scripts / RunCommand / Windows / Beta</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 IMDS Validation</strong>
+        <a href="https://aka.ms/AzVmIMDSValidation" target="_blank">aka.ms/AzVmIMDSValidation</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 Activation Validation</strong>
+        <a href="https://aka.ms/AzVmWinActivationValidationTool" target="_blank">aka.ms/AzVmWinActivationValidationTool</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 Ghosted NIC Cleanup</strong>
+        <a href="https://aka.ms/AzVmGhostedNicCleanup" target="_blank">aka.ms/AzVmGhostedNicCleanup</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 OS Upgrade Assessment</strong>
+        <a href="https://aka.ms/AzVmOSUpgradeAssessment" target="_blank">aka.ms/AzVmOSUpgradeAssessment</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 Firewall Validation</strong>
+        <a href="https://aka.ms/AzVmFirewallValidation" target="_blank">aka.ms/AzVmFirewallValidation</a>
+      </div>
+      <div class="restriction-item">
+        <strong>🔗 Secure Boot Playbook</strong>
+        <a href="https://aka.ms/securebootplaybook" target="_blank">aka.ms/securebootplaybook</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📖 Mellanox Crash TSG</strong>
+        <a href="https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/windows-virtual-machine-mellanox-network-driver-crash-troubleshooting" target="_blank">Mellanox mlx5 Driver Crash Troubleshooting</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📖 Azure CA Details</strong>
+        <a href="https://learn.microsoft.com/azure/security/fundamentals/azure-ca-details" target="_blank">Azure Certificate Authority Details</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📖 In-Place Upgrade</strong>
+        <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows-in-place-upgrade" target="_blank">Windows In-Place Upgrade on Azure VMs</a>
+      </div>
+      <div class="restriction-item">
+        <strong>📖 Duplicate SID</strong>
+        <a href="https://learn.microsoft.com/troubleshoot/windows-server/identity/machine-account-duplicate-sid" target="_blank">Machine Account Duplicate SID Troubleshooting</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Generated by GitHub Copilot CLI — Azure IaaS Support (jdickson) — April 17, 2026</p>
+    <p style="margin-top:6px;">
+      <a href="https://github.com/Azure/azure-support-scripts/issues" target="_blank">Report script issues on GitHub</a> ·
+      <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command" target="_blank">Microsoft Learn Docs</a>
+    </p>
+  </footer>
+
+</div><!-- /page-wrap -->
+</body>
+</html>
