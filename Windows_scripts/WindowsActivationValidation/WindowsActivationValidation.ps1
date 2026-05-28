@@ -97,6 +97,10 @@ try {
                 Write-Host "Troubleshoot Link: https://learn.microsoft.com/en-us/troubleshoot/windows-server/installing-updates-features-roles/error-0x80070005-access-denied" -ForegroundColor Yellow
                 $knownError = $true
             }
+            if ($errorCodeTrimmed -like '*0x800719E4*') {
+                Write-Host "Troubleshoot Link: https://learn.microsoft.com/en-us/troubleshoot/windows-server/installing-updates-features-roles/error-0x800719e4-windows-update-fails" -ForegroundColor Yellow
+                $knownError = $true
+            }
             if (-not $knownError) {
                 Write-Host "Troubleshoot Link: https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/troubleshoot-activation-problems" -ForegroundColor Yellow
             }
